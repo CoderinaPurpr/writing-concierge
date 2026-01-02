@@ -49,7 +49,11 @@
 
     <form action="https://formspree.io/f/mqeaqezo" method="POST">
       
-      <input type="hidden" name="_subject" value="New IELTS Task 2 Submission (Paid)">
+      <input type="hidden" name="_subject" value="New IELTS Task 2 Submission">
+
+      <input type="hidden" name="service" value="IELTS Writing Task 2 Feedback">
+<!-- TODO: Later add payment reference capture if you automate -->
+
 <!-- TODO: Can later include payment reference or date -->
 
       <label>
@@ -57,10 +61,46 @@
         <input type="email" name="email" required>
       </label>
 
+     <!-- ================= TASK 2 QUESTION SELECT ================= -->
+<p><strong>Select ONE Task 2 question:</strong></p>
+      
+<div style = "margin-top:10px;">
+</div>
+      
+<label>
+  <input type="radio" name="task2_question" value="Q1_Advantages_Disadvantages" required>
+  <strong>Q1 (Advantages / Disadvantages):</strong><br>
+  Some people believe that studying online has more advantages than disadvantages, while others disagree.
+  Discuss the advantages and disadvantages of studying online.
+</label>
+
+<div style = "margin-top:10px;">
+</div>
+      
+<label>
+  <input type="radio" name="task2_question" value="Q2_Problem_Solution" required>
+  <strong>Q2 (Problem / Solution):</strong><br>
+  In many cities, traffic congestion is becoming a serious problem.
+  What are the main causes of this problem, and what solutions can governments and individuals take?
+</label>
+
+<div style = "margin-top:10px;">
+</div>
+      
+<label>
+  <input type="radio" name="task2_question" value="Q3_Opinion" required>
+  <strong>Q3 (Opinion):</strong><br>
+  Some people think that schools should focus more on academic subjects, while others believe life skills are more important.
+  To what extent do you agree or disagree?
+</label>
+<!-- ========================================================== -->
+
+
+      
       <label>
-        Paste your IELTS Writing Task 2 essay below<br>
+        Write your IELTS Writing Task 2 essay below<br>
         <textarea name="essay" rows="12" required minlength="1200" maxlength="4000"
-          placeholder="Paste your IELTS Task 2 essay here (250-275 words)."></textarea>
+          placeholder="Write your IELTS Task 2 essay here (250-275 words)."></textarea>
       </label>
 
       <label class="checkbox">
@@ -69,21 +109,9 @@
       </label>
 
       <input type="hidden" name="_next" value="https://CoderinaPurpr.github.io/writing-concierge/success.html">
-
-<hr>
-      <!-- ================= DRY RUN TEST (TEMP) ================= -->
-      <!-- TODO: Remove this block after confirming Formspree works end-to-end -->
-      <button type="submit" name="_dry_run" value="1">
-        TEST: Send Dry Run (no payment)
-      </button>
-      <p class="footer" style="margin-top:10px;">
-        Test-only button. Do not use for real submissions.
-      </p>
-<!-- ======================================================= -->
-
-      <!--
+      
       <button type="submit">Submit Essay for Feedback</button>
-      -->
+    
       
     </form>
 
