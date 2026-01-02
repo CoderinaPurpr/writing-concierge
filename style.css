@@ -4,7 +4,52 @@ h1, h2 { margin-bottom: 15px; }
 p { line-height: 1.5; }
 label { display: block; margin-top: 20px; }
 input[type="email"], textarea { width: 100%; padding: 10px; margin-top: 5px; }
-button { margin-top: 20px; padding: 12px 20px; font-size: 16px; cursor: pointer; }
+textarea{
+  font-family: inherit;     /* Keeps text readable and consistent */
+  line-height: 1.4;         /* Easier to read long essays */
+}
+/* TODO: Can adjust height or add word counter later if needed */
+
+button { margin-top: 20px; padding: 12px 20px; font-size: 16px; cursor: pointer; background: #222; color: #fff; border: none; border-radius: 4px; }
 .pay-button { display: inline-block; padding: 12px 20px; background: #635bff; color: #fff; text-decoration: none; border-radius: 4px; font-weight: bold; }
 .checkbox { margin-top: 15px; }
 .footer { margin-top: 30px; font-size: 0.85em; color: #666; }
+
+/* ================= PAYPAL BUTTON STYLES ================= */
+/* Generated class name from PayPal (keep as-is) */
+.pp-P83V682NGXM66{
+  text-align:center;
+  border:none;
+  border-radius:0.25rem;
+  min-width:11.625rem;
+  padding:0 2rem;
+  height:2.625rem;
+  font-weight:bold;
+  background-color:#FFD140;
+  color:#000000;
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:1rem;
+  line-height:1.25rem;
+  cursor:pointer;
+}
+
+.paypal-wrap{
+  margin-top: 10px;
+}
+
+.paypal-form{
+  display:inline-grid;
+  justify-items:center;
+  align-content:start;
+  gap:0.5rem;
+}
+
+.paypal-powered{
+  font-size: 0.75rem;
+}
+
+.paypal-logo{
+  height:0.875rem;
+  vertical-align:middle;
+}
+/* ======================================================= */
