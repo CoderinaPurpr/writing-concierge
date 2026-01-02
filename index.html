@@ -15,13 +15,35 @@
       <strong>Delivered within 24 hours.</strong>
     </p>
 
-    <h2>Price: $3.99 USD</h2>
+   <!-- ================= PAYMENT SECTION ================= -->
+<h2>Price: $3.99 USD</h2>
 
-    <p>
-      <a class="pay-button" href="https://buy.stripe.com/YOUR_PAYMENT_LINK" target="_blank" rel="noopener">
-        Pay & Continue
-      </a>
-    </p>
+<p>
+  Secure card payment via PayPal. You do not need a PayPal account.
+</p>
+
+<!-- PayPal Single Button (opens PayPal in a new tab) -->
+<!-- TODO: If you later change price or provider, regenerate this button in PayPal and replace ONLY this form block. -->
+<!-- NOTE: This does NOT automatically “unlock” the essay form. That’s OK for concierge MVP. -->
+
+<div class="paypal-wrap">
+  <form action="https://www.paypal.com/ncp/payment/P83V682NGXM66"
+        method="post"
+        target="_blank"
+        class="paypal-form">
+    <input class="pp-P83V682NGXM66" type="submit" value="Pay Now" />
+    <img src="https://www.paypalobjects.com/images/Debit_Credit_APM.svg" alt="Accepted cards" />
+    <section class="paypal-powered">
+      Powered by
+      <img src="https://www.paypalobjects.com/paypal-ui/logos/svg/paypal-wordmark-color.svg"
+           alt="PayPal"
+           class="paypal-logo" />
+    </section>
+  </form>
+</div>
+
+<!-- =================================================== -->
+
 
     <hr>
 
@@ -33,7 +55,8 @@
 
       <label>
         Paste your IELTS Writing Task 2 essay below<br>
-        <textarea name="essay" rows="12" required></textarea>
+        <textarea name="essay" rows="12" required minlength="1200" maxlength="4000"
+          placeholder="Paste your IELTS Task 2 essay here (250-275 words)."></textarea>
       </label>
 
       <label class="checkbox">
@@ -43,7 +66,7 @@
 
       <input type="hidden" name="_next" value="https://CoderinaPurpr.github.io/writing-concierge/success.html">
 
-      <button type="submit">Submit Essay</button>
+      <button type="submit">Submit Essay (after payment)</button>
     </form>
 
     <p class="footer">Feedback is based on IELTS public band descriptors.</p>
