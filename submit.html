@@ -11,10 +11,12 @@
   <div class="container">
     <h1>Write & Submit Your Essay</h1>
 
-    <p class="footer">
-      Time remaining: <span id="timeLeft">60:00</span>
-      <!-- TODO: If you later want pauses/saves, you’ll need server-side drafts -->
-    </p>
+<!-- ================= TIMER ================= -->
+<div id="timerBox">
+  ⏳ Time remaining: <span id="timeLeft">60:00</span>
+</div>
+<!-- ======================================== -->
+
 
     <form id="essayForm" action="https://submission-code-template.rvnvrn.workers.dev/submit" method="POST">
       <!-- Token comes from sessionStorage -->
