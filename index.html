@@ -3,119 +3,73 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>IELTS Writing Task 2 Feedback</title>
+  <title>IELTS Task 2 Feedback - Access</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="container">
-    <h1>IELTS Writing Task 2 Feedback (Band 7 Focus)</h1>
+    <h1>IELTS Writing Task 2 Feedback</h1>
+
+    <!-- ================= PAYPAL (ON ICE) =================
+    <h2>Price: $3.99 USD</h2>
+    <p>Secure card payment via PayPal. You do not need a PayPal account.</p>
+    ...paypal form here...
+    ===================================================== -->
+
+    <h2>Enter your submission token</h2>
     <p>
-      Get clear, examiner-style feedback on your IELTS Writing Task 2 essay.
-      Includes an estimated band score, key fixes, and a high-band sample paragraph.
-      <strong>Delivered within 24 hours.</strong>
+      You will receive a token from me. Tokens expire after 12 hours.
+      <!-- TODO: Re-enable payment flow later (PayPal / other) -->
     </p>
 
-   <!-- ================= PAYMENT SECTION ================= -->
-<h2>Price: $3.99 USD</h2>
+    <label>
+      Token<br>
+      <input id="tokenInput" type="text" placeholder="e.g., KZ-1a2b3c4d" />
+    </label>
 
-<p>
-  Secure card payment via PayPal. You do not need a PayPal account.
-</p>
+    <button id="continueBtn">Continue</button>
 
-<!-- PayPal Single Button (opens PayPal in a new tab) -->
-<!-- TODO: If you later change price or provider, regenerate this button in PayPal and replace ONLY this form block. -->
-<!-- NOTE: This does NOT automatically “unlock” the essay form. That’s OK for concierge MVP. -->
-
-<div class="paypal-wrap">
-  <form action="https://www.paypal.com/ncp/payment/P83V682NGXM66"
-        method="post"
-        target="_blank"
-        class="paypal-form">
-    <input class="pp-P83V682NGXM66" type="submit" value="Pay Now" />
-    <img src="https://www.paypalobjects.com/images/Debit_Credit_APM.svg" alt="Accepted cards" />
-    <section class="paypal-powered">
-      Powered by
-      <img src="https://www.paypalobjects.com/paypal-ui/logos/svg/paypal-wordmark-color.svg"
-           alt="PayPal"
-           class="paypal-logo" />
-    </section>
-  </form>
-</div>
-
-<!-- =================================================== -->
-
-
-    <hr>
-<form action="https://submission-code-template.rvnvrn.workers.dev/submit" method="POST">
-<!-- TODO: Worker validates submission_code in KV and marks it USED -->
-
-  <!--  <form action="https://formspree.io/f/mqeaqezo" method="POST">
-      
-      <input type="hidden" name="_subject" value="New IELTS Task 2 Submission">
-
-      <input type="hidden" name="service" value="IELTS Writing Task 2 Feedback">
-
-
-      <label>
-        Email address<br>
-        <input type="email" name="email" required>
-      </label>
-
-     <!-- ================= TASK 2 QUESTION SELECT ================= -->
-<p><strong>Select ONE Task 2 question:</strong></p>
-      
-<div style = "margin-top:10px;">
-</div>
-      
-<label>
-  <input type="radio" name="task2_question" value="Q1_Advantages_Disadvantages" required>
-  <strong>Q1 (Advantages / Disadvantages):</strong><br>
-  Some people believe that studying online has more advantages than disadvantages, while others disagree.
-  Discuss the advantages and disadvantages of studying online.
-</label>
-
-<div style = "margin-top:10px;">
-</div>
-      
-<label>
-  <input type="radio" name="task2_question" value="Q2_Problem_Solution" required>
-  <strong>Q2 (Problem / Solution):</strong><br>
-  In many cities, traffic congestion is becoming a serious problem.
-  What are the main causes of this problem, and what solutions can governments and individuals take?
-</label>
-
-<div style = "margin-top:10px;">
-</div>
-      
-<label>
-  <input type="radio" name="task2_question" value="Q3_Opinion" required>
-  <strong>Q3 (Opinion):</strong><br>
-  Some people think that schools should focus more on academic subjects, while others believe life skills are more important.
-  To what extent do you agree or disagree?
-</label>
-<!-- ========================================================== -->
-
-
-      
-      <label>
-        Write your IELTS Writing Task 2 essay below<br>
-        <textarea name="essay" rows="12" required minlength="1200" maxlength="4000"
-          placeholder="Write your IELTS Task 2 essay here (250-275 words)."></textarea>
-      </label>
-
-      <label class="checkbox">
-        <input type="checkbox" required>
-        I confirm this is an IELTS Writing Task 2 essay and understand this is not an official IELTS score.
-      </label>
-
-      <input type="hidden" name="_next" value="https://CoderinaPurpr.github.io/writing-concierge/success.html">
-      
-      <button type="submit">Submit Essay for Feedback</button>
-    
-      
-    </form>
-
-    <p class="footer">Feedback is based on IELTS public band descriptors.</p>
+    <p id="msg" class="footer"></p>
   </div>
+
+  <script>
+    // Page 1: Validate token server-side, then move to submit page.
+    // TODO: Add nicer UI states later (spinner, better errors).
+    const WORKER_BASE = "https://submission-code-template.rvnvrn.workers.dev";
+
+    const tokenInput = document.getElementById("tokenInput");
+    const continueBtn = document.getElementById("continueBtn");
+    const msg = document.getElementById("msg");
+
+    continueBtn.addEventListener("click", async () => {
+      msg.textContent = "";
+      const token = tokenInput.value.trim();
+      if (!token) {
+        msg.textContent = "Please enter your token.";
+        return;
+      }
+
+      try {
+        const fd = new FormData();
+        fd.append("token", token);
+
+        const res = await fetch(`${WORKER_BASE}/validate`, { method: "POST", body: fd });
+        const data = await res.json();
+
+        if (!data.ok) {
+          msg.textContent = data.error || "Token validation failed.";
+          return;
+        }
+
+        // Store token in sessionStorage (not visible in URL)
+        sessionStorage.setItem("wc_token", token);
+
+        // Go to essay page
+        window.location.href = "submit.html";
+      } catch (e) {
+        msg.textContent = "Network error. Please try again.";
+      }
+    });
+  </script>
 </body>
 </html>
