@@ -97,6 +97,15 @@
       const s = (remaining % 60).toString().padStart(2, "0");
       timeLeftEl.textContent = `${m}:${s}`;
 
+const box = document.getElementById("timerBox");
+
+// Visual urgency (UI only, server still enforces real limit)
+if (remaining <= 5 * 60) {
+  box.classList.add("danger");
+} else if (remaining <= 15 * 60) {
+  box.classList.add("warning");
+}
+
       if (remaining <= 0) {
         clearInterval(timer);
         submitBtn.disabled = true;
