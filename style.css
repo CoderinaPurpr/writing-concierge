@@ -88,7 +88,57 @@ button:disabled{
   color: #842029;
   border-color: #f1aeb5;
 }
-/* ============================================= */
 
+/* ================= READING LAYOUT ================= */
+.reading-layout{
+  display: flex;
+  gap: 16px;
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 0 12px;
+}
 
-/* ======================================================= */
+.reading-panel{
+  background: #fff;
+  border-radius: 6px;
+  padding: 16px;
+  height: calc(100vh - 90px); /* leaves room for sticky timer */
+  overflow: auto;
+  border: 1px solid #eee;
+}
+
+.reading-questions{ flex: 1; }
+.reading-passage{ flex: 1; }
+
+.passage{
+  white-space: pre-wrap; /* keep line breaks, wrap long lines */
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+/* Make timer bar look strong on reading page */
+.reading-timer{
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Reuse your timer styles (warning/danger) */
+#timerBox.warning{
+  background: #ffe5d0;
+  color: #7a2e00;
+  border-color: #ffb37a;
+}
+#timerBox.danger{
+  background: #f8d7da;
+  color: #842029;
+  border-color: #f1aeb5;
+}
+
+/* Question spacing */
+.q{
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px dashed #eee;
+}
+/* ================================================== */
+
