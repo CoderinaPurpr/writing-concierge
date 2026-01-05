@@ -142,3 +142,8 @@ button:disabled{
 }
 /* ================================================== */
 
+/* Big menu buttons on the landing page */
+#picker button{
+  font-size: 18px;
+  padding: 14px 18px;
+}
