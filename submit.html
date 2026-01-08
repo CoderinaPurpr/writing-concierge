@@ -18,7 +18,7 @@
 <!-- ======================================== -->
 
 
-    <form id="essayForm" action="https://submission-code-template.rvnvrn.workers.dev/submit" method="POST">
+    <form id="essayForm" action="https://submission-code-template.rvnvrn.workers.dev/writing/submit" method="POST">
       <!-- Token comes from sessionStorage -->
       <input type="hidden" name="token" id="tokenField" value="">
 
@@ -73,9 +73,11 @@
   <script>
     // Page 2: Enforce 1-hour timer (UI) + Worker enforces 1-hour window server-side.
     const token = sessionStorage.getItem("wc_token");
-    const tokenField = document.getElementById("tokenField");
+    document.getElementById("tokenField").value = token;
     const msg = document.getElementById("msg");
     const submitBtn = document.getElementById("submitBtn");
+    //TODO: PayPal verification goes here as payment_ref field
+    
 
     if (!token) {
       // No token -> send back to token page
