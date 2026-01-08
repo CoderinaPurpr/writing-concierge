@@ -158,25 +158,32 @@ per year.
     if (!token) window.location.href = "index.html";
 
     // Validate token on load (sets sessionStart server-side)
-    (async () => {
-      try {
-        const fd = new FormData();
-        fd.append("token", token);
-        fd.append("seconds_left", String(remaining));
-        fd.append("duration_seconds", String(23 * 60));
+// Validate token on load (starts sessionStart server-side)
+(async () => {
+  try {
+    const fd = new FormData();
+    fd.append("token", token);
 
-        const res = await fetch(`${WORKER_BASE}/reading/submit`, { method: "POST", body: fd });
-        const data = await res.json();
-        if (!data.ok) {
-          alert(data.error || "Token invalid.");
-          sessionStorage.removeItem("wc_token");
-          window.location.href = "index.html";
-        }
-      } catch {
-        alert("Network error validating token.");
-        window.location.href = "index.html";
-      }
-    })();
+    const res = await fetch(`${WORKER_BASE}/validate`, { method: "POST", body: fd });
+    const data = await res.json();
+
+    if (!data.ok) {
+      alert(data.error || "Token invalid.");
+      sessionStorage.removeItem("wc_token");
+      window.location.href = "index.html";
+      return;
+    }
+
+    // optional: you can display server minutes left if you want
+    // console.log("Essay window minutes left:", data.essay_window_minutes_left);
+
+  } catch (e) {
+    console.error(e);
+    alert("Network error validating token.");
+    window.location.href = "index.html";
+  }
+})();
+
 
     // --- 23 minute timer (UI enforcement) ---
     const totalSeconds = 23 * 60;
