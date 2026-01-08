@@ -162,7 +162,10 @@ per year.
       try {
         const fd = new FormData();
         fd.append("token", token);
-        const res = await fetch(`${WORKER_BASE}/validate`, { method: "POST", body: fd });
+        fd.append("seconds_left", String(remaining));
+        fd.append("duration_seconds", String(23 * 60));
+
+        const res = await fetch(`${WORKER_BASE}/reading/submit`, { method: "POST", body: fd });
         const data = await res.json();
         if (!data.ok) {
           alert(data.error || "Token invalid.");
