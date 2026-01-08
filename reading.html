@@ -241,6 +241,14 @@ per year.
       return el ? el.value : "";
     }
 
+    function safeJsonParse(str, fallback) {
+      try { return JSON.parse(str); } catch { return fallback; }
+    }
+
+    function toJsonString(obj) {
+      return JSON.stringify(obj);
+    }
+
     function grade() {
       const answers = {};
       const incorrect = [];
@@ -283,55 +291,77 @@ per year.
     }
 
     // Submit handler
-    submitBtn.addEventListener("click", async () => {
-      msg.textContent = "";
+submitBtn.addEventListener("click", async () => {
+  msg.textContent = "";
 
-      if (remaining <= 0) {
-        msg.textContent = "Time is up. Please request a new token.";
-        return;
-      }
+  if (remaining <= 0) {
+    msg.textContent = "Time is up. Please request a new token.";
+    return;
+  }
 
-      const email = document.getElementById("email").value.trim();
-      if (!email) {
-        msg.textContent = "Please enter your email.";
-        return;
-      }
+  const email = document.getElementById("email").value.trim();
+  if (!email) {
+    msg.textContent = "Please enter your email.";
+    return;
+  }
 
-      const result = grade();
-      if (!result.ok) {
-        msg.textContent = result.error;
-        return;
-      }
+  const result = grade();
+  if (!result.ok) {
+    msg.textContent = result.error;
+    return;
+  }
 
-      // Consume token server-side (prevents reuse)
-      try {
-        const fd = new FormData();
-        fd.append("token", token);
-        const res = await fetch(`${WORKER_BASE}/consume`, { method: "POST", body: fd });
-        const data = await res.json();
-        if (!data.ok) {
-          msg.textContent = data.error || "Could not finalize token.";
-          return;
-        }
-      } catch {
-        msg.textContent = "Network error finalizing token. Please try again.";
-        return;
-      }
+  // ✅ Send to Worker -> Worker stores in D1 -> Worker consumes token
+  try {
+    const fd = new FormData();
+    fd.append("token", token);
+    fd.append("email", email);
+    fd.append("test_id", "IELTS11_R1_P1"); // ✅ consistent ID for this test
+    fd.append("score", String(result.score));
+    fd.append("total", String(result.total));
 
-      // Store result locally and redirect to results page
-      sessionStorage.setItem("reading_result", JSON.stringify({
-        test_name: "IELTS Eleven - Reading Test 1 Passage 1",
-        email,
-        score: result.score,
-        total: result.total,
-        incorrect: result.incorrect
-      }));
+    // Store full answers + incorrect list for audit/review
+    fd.append("answers_json", JSON.stringify(result.answers));
+    fd.append("incorrect_json", JSON.stringify(result.incorrect));
 
-      // Clear token so they must request a new one next time
-      sessionStorage.removeItem("wc_token");
+    // Timing audit
+    fd.append("seconds_left", String(remaining));
+    fd.append("duration_seconds", String(totalSeconds));
 
-      window.location.href = "reading_results.html";
+    const res = await fetch(`${WORKER_BASE}/validate`, {
+      method: "POST",
+      body: fd
     });
+
+    const data = await res.json();
+
+    if (!data.ok) {
+      msg.textContent = data.error || "Submission failed.";
+      return;
+    }
+
+    // ✅ Save what we want for the results page
+    sessionStorage.setItem("reading_result", JSON.stringify({
+      test_name: "IELTS Eleven - Reading Test 1 Passage 1",
+      email,
+      score: result.score,
+      total: result.total,
+      incorrect: result.incorrect,
+      submission_id: data.submission_id // useful if you later build an admin viewer
+    }));
+
+    // Clear token so they can’t reuse it client-side
+    sessionStorage.removeItem("wc_token");
+
+    // Go to results page
+    window.location.href = "reading_results.html";
+
+  } catch (e) {
+    console.error(e);
+    msg.textContent = "Network error submitting test. Please try again.";
+  }
+});
+
   </script>
 </body>
 </html>
