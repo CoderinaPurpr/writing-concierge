@@ -21,6 +21,9 @@
     <form id="essayForm" action="https://submission-code-template.rvnvrn.workers.dev/writing/submit" method="POST">
       <!-- Token comes from sessionStorage -->
       <input type="hidden" name="token" id="tokenField" value="">
+      <input type="hidden" name="seconds_left" id="secondsLeftField" value="">
+      <input type="hidden" name="duration_seconds" id="durationSecondsField" value="">
+
 
       <label>
         Email address<br>
@@ -71,50 +74,89 @@
   </div>
 
   <script>
-    // Page 2: Enforce 1-hour timer (UI) + Worker enforces 1-hour window server-side.
-    const token = sessionStorage.getItem("wc_token");
-    document.getElementById("tokenField").value = token;
-    const msg = document.getElementById("msg");
-    const submitBtn = document.getElementById("submitBtn");
-    //TODO: PayPal verification goes here as payment_ref field
-    
+  const WORKER_BASE = "https://submission-code-template.rvnvrn.workers.dev";
 
-    if (!token) {
-      // No token -> send back to token page
-      window.location.href = "index.html";
-    } else {
-      tokenField.value = token;
+  // Token from sessionStorage
+  const token = sessionStorage.getItem("wc_token");
+  const msg = document.getElementById("msg");
+  const submitBtn = document.getElementById("submitBtn");
+
+  const tokenField = document.getElementById("tokenField");
+  const secondsLeftField = document.getElementById("secondsLeftField");
+  const durationSecondsField = document.getElementById("durationSecondsField");
+
+  if (!token) {
+    window.location.href = "index.html";
+  }
+
+  tokenField.value = token;
+
+  // --- Timer (UI only; server enforces real limit too) ---
+  const totalSeconds = 60 * 60; // 1 hour
+  let remaining = totalSeconds;
+
+  // Always send duration to server
+  durationSecondsField.value = String(totalSeconds);
+
+  const timeLeftEl = document.getElementById("timeLeft");
+  const box = document.getElementById("timerBox");
+
+  function renderTime() {
+    const m = Math.floor(remaining / 60).toString().padStart(2, "0");
+    const s = (remaining % 60).toString().padStart(2, "0");
+    timeLeftEl.textContent = `${m}:${s}`;
+
+    // Keep hidden field updated so Worker can store it
+    secondsLeftField.value = String(remaining);
+
+    // Visual urgency
+    box.classList.remove("warning", "danger");
+    if (remaining <= 5 * 60) box.classList.add("danger");
+    else if (remaining <= 15 * 60) box.classList.add("warning");
+  }
+
+  renderTime();
+
+  const timer = setInterval(() => {
+    remaining--;
+    renderTime();
+
+    if (remaining <= 0) {
+      clearInterval(timer);
+      submitBtn.disabled = true;
+      msg.textContent = "Time is up. Please request a new token.";
     }
+  }, 1000);
 
-    // Timer starts when they reached this page (UI only).
-    // REAL enforcement is in Worker: sessionStart set at /validate; /submit must be within 1 hour.
-    const totalSeconds = 60 * 60; // 1 hour
-    let remaining = totalSeconds;
+  // Validate token again on load (prevents “Token not validated yet” if direct visit)
+  (async () => {
+    try {
+      const fd = new FormData();
+      fd.append("token", token);
 
-    const timeLeftEl = document.getElementById("timeLeft");
-    const timer = setInterval(() => {
-      remaining--;
+      const res = await fetch(`${WORKER_BASE}/validate`, { method: "POST", body: fd });
+      const text = await res.text();
 
-      const m = Math.floor(remaining / 60).toString().padStart(2, "0");
-      const s = (remaining % 60).toString().padStart(2, "0");
-      timeLeftEl.textContent = `${m}:${s}`;
+      let data;
+      try { data = JSON.parse(text); } catch { data = { ok: false, error: "Unexpected server response." }; }
 
-const box = document.getElementById("timerBox");
-
-// Visual urgency (UI only, server still enforces real limit)
-if (remaining <= 5 * 60) {
-  box.classList.add("danger");
-} else if (remaining <= 15 * 60) {
-  box.classList.add("warning");
-}
-
-      if (remaining <= 0) {
-        clearInterval(timer);
-        submitBtn.disabled = true;
-        msg.textContent = "Time is up. Please request a new token.";
-        // TODO: optionally auto-redirect back to index after timeout
+      if (!data.ok) {
+        alert(data.error || "Token invalid.");
+        sessionStorage.removeItem("wc_token");
+        window.location.href = "index.html";
       }
-    }, 1000);
-  </script>
+    } catch {
+      alert("Network error validating token.");
+      window.location.href = "index.html";
+    }
+  })();
+
+  // Make sure timing fields are present at submit time
+  document.getElementById("essayForm").addEventListener("submit", () => {
+    secondsLeftField.value = String(remaining);
+    durationSecondsField.value = String(totalSeconds);
+  });
+</script>
+
 </body>
 </html>
