@@ -20,11 +20,23 @@
     <div class="reading-panel reading-passage">
       <h2>Reading Passage 1: Nutmeg – a valuable spice</h2>
 
-      <!-- Highlighter toolbar -->
+      <!-- Highlighter toolbar (color choices + persistent + remove) -->
       <div class="highlight-toolbar">
         <button id="hlToggle" type="button">Highlight: OFF</button>
+
+        <label class="hlColorLabel">
+          Color:
+          <select id="hlColor">
+            <option value="#fff3a3">Yellow</option>
+            <option value="#a7e3ff">Blue</option>
+            <option value="#b7f7c1">Green</option>
+            <option value="#ffc1e3">Pink</option>
+            <option value="#e0e0e0">Gray</option>
+          </select>
+        </label>
+
         <button id="hlClear" type="button">Clear highlights</button>
-        <span class="hlTip">Tip: turn ON, then select text to mark.</span>
+        <span class="hlTip">Tip: turn ON, select text to highlight. Click a highlight to remove it.</span>
       </div>
 
       <!-- Passage in paragraphs (no PRE) -->
@@ -216,17 +228,77 @@
     passageEl.addEventListener("cut", (e) => { e.preventDefault(); showHint("Copy is disabled."); });
   }
 
-  // --- Highlighter ---
+  // --- Highlighter (persistent + color choices + click-to-remove) ---
   let highlightOn = false;
   const hlToggle = document.getElementById("hlToggle");
   const hlClear = document.getElementById("hlClear");
+  const hlColor = document.getElementById("hlColor");
 
-  if (hlToggle && passageEl) {
+  // Use a stable key per passage/test so highlights don't mix between tests
+  const HIGHLIGHT_STORE_KEY = "reading_highlights_IELTS11_R1_P1";
+  const COLOR_STORE_KEY = "reading_highlight_color_IELTS11_R1_P1";
+
+  function saveHighlightsToStorage() {
+    if (!passageEl) return;
+    localStorage.setItem(HIGHLIGHT_STORE_KEY, passageEl.innerHTML);
+  }
+
+  function restoreHighlightsFromStorage() {
+    if (!passageEl) return;
+    const saved = localStorage.getItem(HIGHLIGHT_STORE_KEY);
+    if (saved) passageEl.innerHTML = saved;
+  }
+
+  function unwrapMark(markEl) {
+    const parent = markEl.parentNode;
+    while (markEl.firstChild) parent.insertBefore(markEl.firstChild, markEl);
+    parent.removeChild(markEl);
+    parent.normalize();
+  }
+
+  function clearAllHighlights() {
+    if (!passageEl) return;
+    passageEl.querySelectorAll("mark.hl").forEach(unwrapMark);
+    localStorage.removeItem(HIGHLIGHT_STORE_KEY);
+  }
+
+  // Restore saved highlights on load
+  restoreHighlightsFromStorage();
+
+  // Init color
+  (function initHighlightColor() {
+    if (!hlColor) return;
+    const saved = localStorage.getItem(COLOR_STORE_KEY);
+    if (saved) hlColor.value = saved;
+    document.documentElement.style.setProperty("--hl-color", hlColor.value);
+  })();
+
+  if (hlColor) {
+    hlColor.addEventListener("change", () => {
+      localStorage.setItem(COLOR_STORE_KEY, hlColor.value);
+      document.documentElement.style.setProperty("--hl-color", hlColor.value);
+    });
+  }
+
+  if (hlToggle) {
     hlToggle.addEventListener("click", () => {
       highlightOn = !highlightOn;
       hlToggle.textContent = highlightOn ? "Highlight: ON" : "Highlight: OFF";
     });
+  }
 
+  // Click-to-remove
+  if (passageEl) {
+    passageEl.addEventListener("click", (e) => {
+      const mark = e.target.closest && e.target.closest("mark.hl");
+      if (!mark) return;
+      unwrapMark(mark);
+      saveHighlightsToStorage();
+    });
+  }
+
+  // Select-to-highlight
+  if (passageEl) {
     passageEl.addEventListener("mouseup", () => {
       if (!highlightOn) return;
 
@@ -235,7 +307,12 @@
       if (!text) return;
 
       const range = sel.getRangeAt(0);
-      if (!passageEl.contains(range.commonAncestorContainer)) return;
+
+      // Only allow highlighting inside passage
+      if (!passageEl.contains(range.commonAncestorContainer)) {
+        sel.removeAllRanges();
+        return;
+      }
 
       const mark = document.createElement("mark");
       mark.className = "hl";
@@ -243,22 +320,22 @@
       try {
         range.surroundContents(mark);
         sel.removeAllRanges();
+        saveHighlightsToStorage();
       } catch {
         sel.removeAllRanges();
+        // Selection across multiple nodes/paragraphs can throw; ignore for stability.
       }
     });
   }
 
-  if (hlClear && passageEl) {
+  if (hlClear) {
     hlClear.addEventListener("click", () => {
-      passageEl.querySelectorAll("mark.hl").forEach(m => {
-        const parent = m.parentNode;
-        while (m.firstChild) parent.insertBefore(m.firstChild, m);
-        parent.removeChild(m);
-        parent.normalize();
-      });
+      clearAllHighlights();
     });
   }
+
+  // NOTE: Screenshots cannot be reliably blocked by websites in normal browsers.
+  // Best-effort discouragement would be watermarks/blur-on-tab-switch, but not true blocking.
 
   // --- Answer key ---
   const key = {
