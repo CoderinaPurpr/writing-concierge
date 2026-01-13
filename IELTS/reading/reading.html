@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Test Concierge — IELTS Reading</title>
+</head>
+<body>
+  <h1>IELTS Reading</h1>
+
+  <label for="testSelect">
+    Select test:
+    <select id="testSelect">
+      <option value="tests/test-101.json">Test 1 – Passage 1</option>
+    </select>
+  </label>
+
+  <button id="loadBtn" type="button">Load</button>
+
+  <hr />
+
+  <section>
+    <h2 id="passageTitle"></h2>
+    <article id="passageText" style="white-space: pre-wrap;"></article>
+  </section>
+
+  <hr />
+
+  <section>
+    <h2>Questions</h2>
+    <div id="questions"></div>
+  </section>
+
+  <script src="reading.js"></script>
+</body>
+</html>
