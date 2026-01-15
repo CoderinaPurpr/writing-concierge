@@ -1,0 +1,162 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Submit Your IELTS Task 2 Essay</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Write & Submit Your Essay</h1>
+
+<!-- ================= TIMER ================= -->
+<div id="timerBox">
+  ⏳ Time remaining: <span id="timeLeft">60:00</span>
+</div>
+<!-- ======================================== -->
+
+
+    <form id="essayForm" action="https://submission-code-template.rvnvrn.workers.dev/writing/submit" method="POST">
+      <!-- Token comes from sessionStorage -->
+      <input type="hidden" name="token" id="tokenField" value="">
+      <input type="hidden" name="seconds_left" id="secondsLeftField" value="">
+      <input type="hidden" name="duration_seconds" id="durationSecondsField" value="">
+
+
+      <label>
+        Email address<br>
+        <input type="email" name="email" required>
+      </label>
+
+      <p><strong>Select ONE Task 2 question:</strong></p>
+
+      <label>
+        <input type="radio" name="task2_question" value="Q1_Advantages_Disadvantages" required>
+        <strong>Q1 (Advantages / Disadvantages):</strong><br>
+        Some people believe that studying online has more advantages than disadvantages, while others disagree.
+        Discuss the advantages and disadvantages of studying online.
+      </label>
+
+      <div style="margin-top:10px;"></div>
+
+      <label>
+        <input type="radio" name="task2_question" value="Q2_Problem_Solution" required>
+        <strong>Q2 (Problem / Solution):</strong><br>
+        In many cities, traffic congestion is becoming a serious problem.
+        What are the main causes of this problem, and what solutions can governments and individuals take?
+      </label>
+
+      <div style="margin-top:10px;"></div>
+
+      <label>
+        <input type="radio" name="task2_question" value="Q3_Opinion" required>
+        <strong>Q3 (Opinion):</strong><br>
+        Some people think that schools should focus more on academic subjects, while others believe life skills are more important.
+        To what extent do you agree or disagree?
+      </label>
+
+      <label>
+        Write your IELTS Writing Task 2 essay below<br>
+        <textarea name="essay" rows="12" required minlength="1200" maxlength="4000"
+          placeholder="Write your IELTS Task 2 essay here (250-275 words)."></textarea>
+      </label>
+
+      <label class="checkbox">
+        <input type="checkbox" required>
+        I confirm this is my own work and understand this is not an official IELTS score.
+      </label>
+
+      <button id="submitBtn" type="submit">Submit Essay</button>
+      <p id="msg" class="footer"></p>
+    </form>
+  </div>
+
+  <script>
+  const WORKER_BASE = "https://submission-code-template.rvnvrn.workers.dev";
+
+  // Token from sessionStorage
+  const token = sessionStorage.getItem("wc_token");
+  const msg = document.getElementById("msg");
+  const submitBtn = document.getElementById("submitBtn");
+
+  const tokenField = document.getElementById("tokenField");
+  const secondsLeftField = document.getElementById("secondsLeftField");
+  const durationSecondsField = document.getElementById("durationSecondsField");
+
+  if (!token) {
+    window.location.href = "index.html";
+  }
+
+  tokenField.value = token;
+
+  // --- Timer (UI only; server enforces real limit too) ---
+  const totalSeconds = 60 * 60; // 1 hour
+  let remaining = totalSeconds;
+
+  // Always send duration to server
+  durationSecondsField.value = String(totalSeconds);
+
+  const timeLeftEl = document.getElementById("timeLeft");
+  const box = document.getElementById("timerBox");
+
+  function renderTime() {
+    const m = Math.floor(remaining / 60).toString().padStart(2, "0");
+    const s = (remaining % 60).toString().padStart(2, "0");
+    timeLeftEl.textContent = `${m}:${s}`;
+
+    // Keep hidden field updated so Worker can store it
+    secondsLeftField.value = String(remaining);
+
+    // Visual urgency
+    box.classList.remove("warning", "danger");
+    if (remaining <= 5 * 60) box.classList.add("danger");
+    else if (remaining <= 15 * 60) box.classList.add("warning");
+  }
+
+  renderTime();
+
+  const timer = setInterval(() => {
+    remaining--;
+    renderTime();
+
+    if (remaining <= 0) {
+      clearInterval(timer);
+      submitBtn.disabled = true;
+      msg.textContent = "Time is up. Please request a new token.";
+    }
+  }, 1000);
+
+  // Validate token again on load (prevents “Token not validated yet” if direct visit)
+  (async () => {
+    try {
+      const fd = new FormData();
+      fd.append("token", token);
+
+      const res = await fetch(`${WORKER_BASE}/validate`, { method: "POST", body: fd });
+      const text = await res.text();
+
+      let data;
+      try { data = JSON.parse(text); } catch { data = { ok: false, error: "Unexpected server response." }; }
+
+      if (!data.ok) {
+        alert(data.error || "Token invalid.");
+        sessionStorage.removeItem("wc_token");
+        window.location.href = "index.html";
+      }
+    } catch {
+      alert("Network error validating token.");
+      window.location.href = "index.html";
+    }
+  })();
+
+  // Make sure timing fields are present at submit time
+  document.getElementById("essayForm").addEventListener("submit", () => {
+    secondsLeftField.value = String(remaining);
+    durationSecondsField.value = String(totalSeconds);
+  });
+</script>
+
+</body>
+</html>
